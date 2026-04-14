@@ -1,3 +1,6 @@
+#include <vector>
+#include <iostream>
+
 class PilhaInt {
     public:
     PilhaInt(int cap = 10);
@@ -14,41 +17,34 @@ class PilhaInt {
     PilhaInt& operator<<(int valor);
 
     private:
-    int* pilha;
-    int topo;
-    int capacidade_maxima;
+    std::vector<int> pilha;
 };
 
 PilhaInt::PilhaInt(int cap) {
-    capacidade_maxima = cap;
-    pilha = (int*)malloc(capacidade_maxima * sizeof(int));
-    for (int i = 0; i < capacidade_maxima; i++) {
-        pilha[i] = 0;
-    }
-    topo = 0;
+    pilha.reserve(cap);
 }
 
 void PilhaInt::empilha(int valor) {
-    if (topo == capacidade_maxima) {
-        redimensiona(capacidade_maxima * 2);
+    if (pilha.size() == pilha.capacity()) {
+        redimensiona(pilha.capacity() * 2);
     }
-    pilha[topo] = valor;
-    topo++;
+    pilha.push_back(valor);
 }
 
 void PilhaInt::print(std::ostream& o) {
     o << "[ ";
-    for (int i = 0; i < topo; i++) {
+    for (size_t i = 0; i < pilha.size(); i++) {
         o << pilha[i];
-        if (i < topo - 1) o << ", ";
+        if (i < pilha.size() - 1) o << ", ";
     }
     o << " ]";
 }
 
 int PilhaInt::desempilha() {
-    if (topo > 0) {
-        topo--;
-        return pilha[topo];
+    if (!pilha.empty()) {
+        int valor = pilha[pilha.size() - 1];
+        pilha.pop_back();
+        return valor;
     } else {
         std::cout << "Pilha vazia!" << std::endl;
         return -1;
@@ -56,20 +52,14 @@ int PilhaInt::desempilha() {
 }
 
 PilhaInt::~PilhaInt() {
-    free(pilha);
 }
 
 PilhaInt& PilhaInt::operator=(const PilhaInt& outra) {
-    if (this != &outra) {
-        if (this ->capacidade_maxima != outra.capacidade_maxima) {
-            free(pilha);
-            capacidade_maxima = outra.capacidade_maxima;
-            pilha = (int*)malloc(capacidade_maxima * sizeof(int));
-        }
-        topo = outra.topo;
-        for (int i = 0; i < topo; i++) {
-            pilha[i] = outra.pilha[i];
-        }
+if (this != &outra) {
+        std::vector<int> copia_exata;
+        copia_exata.reserve(outra.pilha.capacity());
+        copia_exata.assign(outra.pilha.begin(), outra.pilha.end());
+        pilha.swap(copia_exata);
     }
     return *this;
 }
@@ -80,22 +70,19 @@ PilhaInt& PilhaInt::operator<<(int valor) {
 }
 
 PilhaInt::PilhaInt(const PilhaInt& outra) {
-    capacidade_maxima = outra.capacidade_maxima;
-    topo = outra.topo;
-    pilha = (int*)malloc(capacidade_maxima * sizeof(int));
-    for (int i = 0; i < topo; i++) {
-        pilha[i] = outra.pilha[i];
-    }
+    pilha = outra.pilha;
 }
 
 int PilhaInt::capacidade() {
-    return capacidade_maxima;
+    return pilha.capacity();
 }
 
 void PilhaInt::redimensiona(int nova_capacidade) {
-    if (nova_capacidade < topo) {
-        topo = nova_capacidade;
+    if (nova_capacidade < (int)pilha.size()) {
+         pilha.resize(nova_capacidade);
     }
-    pilha = (int*)realloc(pilha, nova_capacidade * sizeof(int));
-    capacidade_maxima = nova_capacidade;
+    std::vector<int> temp;
+    temp.reserve(nova_capacidade);
+    temp.assign(pilha.begin(), pilha.end());
+    pilha.swap(temp);
 }
